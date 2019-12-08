@@ -20,7 +20,7 @@ def get_patch_matches(source_img, reference_img, patch_size, patch_spacing=10, p
     :param pca: PCA object to perform PCA on patches
     :param nn: NearestNeighbor object to perform NN with source patches
     :param reference_patches: patches of reference image
-    :returns: ndarray of patch matches found in reference image of size (num_patches, patch_size, patch_size, num_channels) and distances
+    :returns: ndarray of patch matches found in reference image of size (num_patches, patch_size, patch_size, num_channels)
     """
     # Get objects for PCA transform and NN matching if not provided
     if (pca is None) or (nn is None) or (reference_patches is None):
@@ -35,7 +35,7 @@ def get_patch_matches(source_img, reference_img, patch_size, patch_spacing=10, p
     distances, idxs = nn.kneighbors(pca_source_patches)
     matches = reference_patches[idxs]
 
-    return matches.reshape(-1, patch_size, patch_size, source_img.shape[-1]), distances
+    return matches.reshape(-1, patch_size, patch_size, source_img.shape[-1])
 
 
 def get_patches_pca_nn(img, patch_size, patch_spacing=10):
