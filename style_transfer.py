@@ -33,12 +33,15 @@ def style_transfer(content, style, num_pyramid_layers=3, patch_sizes=(33, 21, 13
         scaled_content = content_pyramid[L]
         scaled_segmentation = segmentation_pyramid[L]
 
-        for n in patch_sizes:
-            matches = pca.get_matches(output_image, scaled_style, n)
-            output_image = aggregate_patches(output_image, matches, num_irls_iters)
-            output_image = fuse_content(output_image, scaled_content, scaled_segmentation)
-            output_image = transfer_color(scaled_style, output_image)
-            output_image = denoise(output_image)
+        for patch_size in patch_sizes:
+            style_patches, pca, nn = pca.get_patches_pca_nn(scaled_style, patch_size)
+            
+            for _ in num_iters:
+                matches = pca.get_matches(output_image, scaled_style, patch_size, pca=pca, nn=nn, reference_patches=style_patches)
+                output_image = aggregate_patches(output_image, matches, num_irls_iters)
+                output_image = fuse_content(output_image, scaled_content, scaled_segmentation)
+                output_image = transfer_color(scaled_style, output_image)
+                output_image = denoise(output_image)
         
         # Upscale to match the size of the next layer content image unless last layer
         if L < num_pyramid_layers - 1:

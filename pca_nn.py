@@ -7,7 +7,7 @@ from sklearn.neighbors import NearestNeighbors
 from sklearn.decomposition import PCA
 
 
-def get_patch_matches(source_img, reference_img, patch_size, patch_spacing=10):
+def get_patch_matches(source_img, reference_img, patch_size, patch_spacing=10, pca=None, nn=None, reference_patches=None):
     """
     Given a source image, reference image, patch size, and patch spacing,
     finds the closest matches to source patches of size (patch_size x patch_size)
@@ -16,11 +16,15 @@ def get_patch_matches(source_img, reference_img, patch_size, patch_spacing=10):
     :param source_img: ndarray representing image we want to match
     :param reference_img: ndarray representing image we want to get patch matches from
     :param patch_size: int representing the height and width of the patch
-    :patch_spacing: int representing how far apart the centers of each patch should be from each other
+    :param patch_spacing: int representing how far apart the centers of each patch should be from each other
+    :param pca: PCA object to perform PCA on patches
+    :param nn: NearestNeighbor object to perform NN with source patches
+    :param reference_patches: patches of reference image
     :returns: ndarray of patch matches found in reference image of size (num_patches, patch_size, patch_size, num_channels)
     """
-    # Get objects for PCA transform and NN matching
-    reference_patches, pca, nn = get_patches_pca_nn(reference_img, patch_size, patch_spacing)
+    # Get objects for PCA transform and NN matching if not provided
+    if (pca is None) or (nn is None) or (references_patches is None):
+        reference_patches, pca, nn = get_patches_pca_nn(reference_img, patch_size, patch_spacing)
 
     # Get patches from source image and transform into PCA domain
     source_patches = extract_patches(source_img, patch_shape=(patch_size, patch_size, source_img.shape[-1]), extraction_step=patch_spacing)
@@ -34,7 +38,7 @@ def get_patch_matches(source_img, reference_img, patch_size, patch_spacing=10):
     return matches.reshape(-1, patch_size, patch_size, source_img[-1])
 
 
-def get_patches_pca_nn(img, patch_size, patch_spacing):
+def get_patches_pca_nn(img, patch_size, patch_spacing=10):
     """
     Given an image, patch size, and patch spacing, returns the patches of image
     based on spacing (ndarray of shape (M, n^2, c)), PCA object to transform data,
