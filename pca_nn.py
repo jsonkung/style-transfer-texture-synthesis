@@ -20,10 +20,10 @@ def get_patch_matches(source_img, reference_img, patch_size, patch_spacing=10, p
     :param pca: PCA object to perform PCA on patches
     :param nn: NearestNeighbor object to perform NN with source patches
     :param reference_patches: patches of reference image
-    :returns: ndarray of patch matches found in reference image of size (num_patches, patch_size, patch_size, num_channels)
+    :returns: ndarray of patch matches found in reference image of size (num_patches, patch_size, patch_size, num_channels) and distances
     """
     # Get objects for PCA transform and NN matching if not provided
-    if (pca is None) or (nn is None) or (references_patches is None):
+    if (pca is None) or (nn is None) or (reference_patches is None):
         reference_patches, pca, nn = get_patches_pca_nn(reference_img, patch_size, patch_spacing)
 
     # Get patches from source image and transform into PCA domain
@@ -32,10 +32,10 @@ def get_patch_matches(source_img, reference_img, patch_size, patch_spacing=10, p
     pca_source_patches = pca.transform(source_patches)
     
     # Find indexes of nearest neighbors for each patch and get the corresponding raw patches from reference
-    _, idxs = nn.kneighbors(pca_source_patches)
+    distances, idxs = nn.kneighbors(pca_source_patches)
     matches = reference_patches[idxs]
 
-    return matches.reshape(-1, patch_size, patch_size, source_img[-1])
+    return matches.reshape(-1, patch_size, patch_size, source_img.shape[-1]), distances
 
 
 def get_patches_pca_nn(img, patch_size, patch_spacing=10):
@@ -61,7 +61,7 @@ def get_patches_pca_nn(img, patch_size, patch_spacing=10):
 
     # Create nearest neighbor matcher based on PCA domain patches
     nn_matcher = NearestNeighbors(n_neighbors=1, algorithm="auto")
-    nn_matcher = matcher.fit(pca_patches)
+    nn_matcher = nn_matcher.fit(pca_patches)
     
     return patches.reshape(-1, patch_size * patch_size, img.shape[-1]), pca, nn_matcher
     
@@ -69,4 +69,11 @@ def get_patches_pca_nn(img, patch_size, patch_spacing=10):
 
 if __name__ == "__main__":
     img = cv2.imread(os.path.join("images", "contents", "dog.jpg"), cv2.IMREAD_COLOR)
+    x = np.array([[0, 1, 3, 5], [0, 4, 3, 2], [4, 3, 0, 1]])
+    patches = extract_patches(x.reshape(4, 3), patch_shape=(1, 2), extraction_step=2)
+    print(patches)
+    print(x)
     
+    patches[0][0][0] = [100, 100]
+    print(patches)
+    print(x)
