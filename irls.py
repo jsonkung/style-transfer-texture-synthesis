@@ -5,6 +5,10 @@ from sklearn.feature_extraction.image import extract_patches
 NOISE = 0.000001
 
 def aggregate_patches(output_image, matches, patch_spacing, num_irls_iters=10, r=0.8):
+    # Ignore extract_patches deprecation warning
+    import warnings
+    warnings.filterwarnings("ignore", category=FutureWarning)
+
     patch_size = matches.shape[1]
     num_channels = matches.shape[-1]
     

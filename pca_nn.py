@@ -22,11 +22,17 @@ def get_patch_matches(source_img, reference_img, patch_size, patch_spacing=10, p
     :param reference_patches: patches of reference image
     :returns: ndarray of patch matches found in reference image of size (num_patches, patch_size, patch_size, num_channels)
     """
+    # Ignore extract_patches deprecation warning
+    import warnings
+    warnings.filterwarnings("ignore", category=FutureWarning)
+
     # Get objects for PCA transform and NN matching if not provided
     if (pca is None) or (nn is None) or (reference_patches is None):
         reference_patches, pca, nn = get_patches_pca_nn(reference_img, patch_size, patch_spacing)
 
     # Get patches from source image and transform into PCA domain
+    print(source_img.shape)
+    print(patch_size)
     source_patches = extract_patches(source_img, patch_shape=(patch_size, patch_size, source_img.shape[-1]), extraction_step=patch_spacing)
     source_patches = source_patches.reshape(-1, patch_size * patch_size * source_img.shape[-1])
     pca_source_patches = pca.transform(source_patches)
@@ -50,6 +56,10 @@ def get_patches_pca_nn(img, patch_size, patch_spacing=10):
     :returns: ndarray of raw patches with shape (num_patches, patch_size * patch_size, num_channels),
         PCA object fit to img patches, and NN fit to img patches
     """
+    # Ignore extract_patches deprecation warning
+    import warnings
+    warnings.filterwarnings("ignore", category=FutureWarning)
+
     # Get patches matrix from style image
     patches = extract_patches(img, patch_shape=(patch_size, patch_size, img.shape[-1]), extraction_step=patch_spacing)
     patches_flattened = patches.reshape(-1, patch_size * patch_size * img.shape[-1])
